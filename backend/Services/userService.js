@@ -25,7 +25,7 @@ export async function deleteUser(id){
 
 
 export const loginUser = async (email, password) => {
-    const user = await User.findOne({email});
+    const user = await UserModel.findOne({email});
     if (!user) throw new Error('Invalid credentials');
   
     const isMatch = await bcrypt.compare(password, user.password);
@@ -36,6 +36,6 @@ export const loginUser = async (email, password) => {
   };
 
   export const registerUser = async (data) => {
-    const user = new User(data);
+    const user = new UserModel(data);
     return await user.save();
   };

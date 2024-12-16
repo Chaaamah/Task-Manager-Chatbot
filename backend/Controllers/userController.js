@@ -50,7 +50,7 @@ export async function deleteUser(req, res) {
 
 export const loginUser = async (req, res) => {
     try {
-      const token = await userService.loginUser(req.body.email, req.body.password);
+      const token = await UserService.loginUser(req.body.email, req.body.password);
       res.json({ token });
     } catch (error) {
       res.status(401).json({ error: error.message });
@@ -59,7 +59,7 @@ export const loginUser = async (req, res) => {
 
 export const registerUser = async (req, res) => {
     try {
-      const user = await userService.registerUser(req.body);
+      const user = await UserService.registerUser(req.body);
       res.status(201).json(user);
     } catch (error) {
       res.status(500).json({ error: error.message });
