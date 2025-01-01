@@ -6,12 +6,27 @@ function Chatbot() {
   const [input, setInput] = useState("");
 
   const sendMessage = () => {
-    axios.post("http://localhost:5000/api/chatbot", { message: input })
+    if (!input.trim()) return; // Ne pas envoyer de message vide
+
+    axios.post("http://localhost:5000/api/chat", { message: input })
       .then((response) => {
-        setMessages([...messages, { role: "user", content: input }, { role: "bot", content: response.data.reply }]);
-        setInput("");
+        // Ajouter le message de l'utilisateur et la réponse du chatbot à l'historique
+        setMessages([
+          ...messages,
+          { role: "user", content: input },
+          { role: "bot", content: response.data.reply },
+        ]);
+        setInput(""); // Réinitialiser le champ de saisie
       })
-      .catch((error) => console.error("Erreur chatbot :", error));
+      .catch((error) => {
+        console.error("Erreur chatbot :", error);
+        // Ajouter un message d'erreur à l'historique
+        setMessages([
+          ...messages,
+          { role: "user", content: input },
+          { role: "bot", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
+        ]);
+      });
   };
 
   return (
@@ -19,7 +34,7 @@ function Chatbot() {
       <div className="flex-grow overflow-y-auto">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-            <span className={`${msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-300"} p-2 rounded`}>
+            <span className={`inline-block p-2 rounded ${msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-300"}`}>
               {msg.content}
             </span>
           </div>
@@ -31,8 +46,12 @@ function Chatbot() {
           className="flex-grow p-2 border rounded"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === "Enter" && sendMessage()} // Envoyer le message en appuyant sur Entrée
+          placeholder="Tapez votre message..."
         />
-        <button onClick={sendMessage} className="ml-2 px-4 py-2 bg-green-500 text-white rounded">Envoyer</button>
+        <button onClick={sendMessage} className="ml-2 px-4 py-2 bg-green-500 text-white rounded">
+          Envoyer
+        </button>
       </div>
     </div>
   );

@@ -1,24 +1,40 @@
 import React from "react";
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./component/home";
-import Dashboard from "./component/dashboard";
-import Chatbot from "./component/chatbot";
-import Login from "./component/login";
-import Register from "./component/register";
-import AddTaks from "./component/addTaks";
+import Home from "./component/Home"
+import Login from "./component/Login"
+import Register from "./component/Register"
+import Dashboard from "./component/Dashboard"
+import AddTask from "./component/AddTask"
+import Chatbot from "./component/Chatbot"
+
+import UsersManagement from "./component/UsersManagement";
+import AddUser from "./component/AddUser";
+import EditUser from "./component/EditUser";
+  
 
 function App() {
   return (
+    <div className="App">
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/addTaks" element={<AddTaks />} />
+        <Route path="/add_tasks" element={<AddTask />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+        <Route path="/users" element={<UsersManagement />} />
+        <Route path="/add-user" element={<AddUser />} />
+        <Route path="/edit-user/:userId" element={<EditUser />} />
       </Routes>
     </Router>
+    </div>
+    
   );
 }
 

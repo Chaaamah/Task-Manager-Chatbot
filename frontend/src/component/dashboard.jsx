@@ -57,11 +57,21 @@ function Dashboard() {
                   </div>
                   <div className="hidden md:block">
                     <div className="ml-10 flex items-baseline space-x-4">
-                      <Link to="/add_taks">
-                        <a href="" className="bg-gray-900 text-white text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium" >
-                          add taks
-                        </a>
-                      </Link>
+                    <Link to="/dashboard" className="bg-gray-900 text-white text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                      Dashboard
+                    </Link>
+
+                    <Link to="/add_tasks" className="bg-gray-900 text-white text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                      Tasks
+                    </Link>
+
+                    <Link to="/add_tasks" className="bg-gray-900 text-white text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                      Users
+                    </Link>
+
+                    <Link to="/chatbot" className="bg-gray-900 text-white text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                      Chatbot
+                    </Link>
                      
                     </div>
                   </div>
