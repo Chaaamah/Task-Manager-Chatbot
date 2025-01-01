@@ -44,3 +44,17 @@ export async function deleteTask(req, res) {
         res.status(500).json({err});        
     }
 }
+
+export async function getTasksByUserId(req, res) {
+    try {
+        const userId = req.params.userId;
+        const tasks = await TaskService.getTasksByUserId(userId); // tasks est maintenant un tableau
+        if (tasks.length > 0) {
+            res.status(200).json(tasks); // Renvoyer un tableau de tâches
+        } else {
+            res.status(404).json({ message: 'Aucune tâche trouvée pour cet utilisateur' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

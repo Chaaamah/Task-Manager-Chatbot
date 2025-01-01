@@ -48,7 +48,7 @@ export async function deleteUser(req, res) {
 
 
 
-export const loginUser = async (req, res) => {
+export async function loginUser(req, res){
     try {
       // Appeler le service pour gérer la connexion
       const { token, user } = await UserService.loginUser(req.body.email, req.body.password);
@@ -64,7 +64,7 @@ export const loginUser = async (req, res) => {
   };
   
 
-export const registerUser = async (req, res) => {
+export async function registerUser(req, res){
     try {
       const user = await UserService.registerUser(req.body);
       res.status(201).json(user);

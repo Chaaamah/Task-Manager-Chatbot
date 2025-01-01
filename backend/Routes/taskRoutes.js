@@ -11,5 +11,7 @@ router.route("/:id").get(taskController.getTaskById)
                 .delete(taskController.deleteTask)
                 .patch(taskController.updateTask)
 
+router.route("/user/:userId").get(taskController.getTasksByUserId);
+
 export default router;
 
