@@ -25,15 +25,28 @@ export async function deleteUser(id){
 
 
 export const loginUser = async (email, password) => {
-    const user = await UserModel.findOne({email});
+    // Rechercher l'utilisateur par email
+    const user = await UserModel.findOne({ email });
     if (!user) throw new Error('Invalid credentials');
   
+    // Vérifier si le mot de passe correspond
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error('Invalid credentials');
   
+    // Générer un token JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return token;
+  
+    // Retourner le token et les informations utilisateur
+    return { 
+      token, 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    };
   };
+  
 
   export const registerUser = async (data) => {
     const user = new UserModel(data);

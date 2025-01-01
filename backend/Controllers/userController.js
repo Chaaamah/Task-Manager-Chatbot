@@ -50,12 +50,19 @@ export async function deleteUser(req, res) {
 
 export const loginUser = async (req, res) => {
     try {
-      const token = await UserService.loginUser(req.body.email, req.body.password);
-      res.json({ token });
+      // Appeler le service pour gérer la connexion
+      const { token, user } = await UserService.loginUser(req.body.email, req.body.password);
+  
+      // Envoyer la réponse avec le token et les informations utilisateur
+      res.status(200).json({ 
+        token, 
+        user 
+      });
     } catch (error) {
       res.status(401).json({ error: error.message });
     }
   };
+  
 
 export const registerUser = async (req, res) => {
     try {

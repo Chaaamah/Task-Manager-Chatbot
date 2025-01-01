@@ -4,12 +4,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./component/Home"
-import Login from "./component/Login"
-import Register from "./component/Register"
-import Dashboard from "./component/Dashboard"
+import Home from  "./component/home";
+import Login from  "./component/login";
+import Register from "./component/register"
+import Dashboard from "./component/dashboard"
 import AddTask from "./component/AddTask"
-import Chatbot from "./component/Chatbot"
+import Chatbot from "./component/chatbot"
 
 import UsersManagement from "./component/UsersManagement";
 import AddUser from "./component/AddUser";
