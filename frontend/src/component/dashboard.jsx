@@ -11,7 +11,7 @@ function Dashboard() {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
-    { name: "Tasks", href: "/tasks", current: false },
+    { name: "AddTask", href: "/add_tasks", current: false },
     { name: "Users", href: "/users", current: false },
     { name: "Chatbot", href: "/chatbot", current: false },
   ];
@@ -27,15 +27,6 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    // Récupération des tâches
-    axios
-      .get("http://localhost:5000/api/tasks")
-      .then((response) => setTasks(response.data))
-      .catch((error) => {
-        console.error("Erreur lors du chargement des tâches :", error);
-        setError("Impossible de charger les tâches.");
-      });
-
     // Récupération des informations utilisateur depuis le localStorage
     const storedUser = {
       id: localStorage.getItem("userId"),
@@ -43,11 +34,21 @@ function Dashboard() {
       email: localStorage.getItem("userEmail"),
     };
 
-    if (storedUser.id) {
-      setUser(storedUser);
-    } else {
+    if (!storedUser.id) {
       setError("Aucun utilisateur connecté.");
+      return;
     }
+
+    setUser(storedUser);
+
+    // Récupération des tâches associées à l'utilisateur connecté
+    axios
+      .get(`http://localhost:5000/api/tasks/user/${storedUser.id}`)
+      .then((response) => setTasks(response.data))
+      .catch((error) => {
+        console.error("Erreur lors du chargement des tâches :", error);
+        setError("Impossible de charger les tâches.");
+      });
   }, []);
 
   return (
@@ -196,7 +197,10 @@ function Dashboard() {
         <header className="bg-white shadow">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {error ? (
-              <p className="text-red-500">{error}</p>
+              <div>
+              <h2>Dashboard</h2>
+              
+            </div>
             ) : user ? (
               <div>
                 <h2>Dashboard</h2>
@@ -211,8 +215,22 @@ function Dashboard() {
         <main>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-5 mt-5">
             {error ? (
-              <div className="text-red-500">{error}</div>
-            ) : (
+              <div className="flex flex-col items-center justify-center text-center mt-10">
+                <img 
+                  src="https://via.placeholder.com/150" 
+                  alt="Aucune tâche" 
+                  className="mb-4 w-24 h-24"
+                />
+                <h3 className="text-xl font-bold text-gray-700">Aucune tâche trouvée</h3>
+                <p className="text-gray-500">Vous n'avez pas encore créé de tâche.</p>
+                <Link 
+                  to="/add_tasks" 
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Ajouter une tâche
+                </Link>
+             </div>
+            ) : tasks.length > 0 ? (
               <div className="grid gap-4">
                 {tasks.map((task) => (
                   <div key={task._id} className="p-4 bg-white shadow rounded">
@@ -223,9 +241,10 @@ function Dashboard() {
                   </div>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
         </main>
+
 
       </div>
     </>
