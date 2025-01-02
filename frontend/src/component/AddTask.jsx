@@ -12,8 +12,8 @@ const navigation = [
 ];
 
 const userNavigation = [
-  { name: "Votre profil", href: "#" },
-  { name: "Déconnexion", href: "#" },
+  { name: "Votre profil", href: "/profile", onclick:"" },
+  { name: "Déconnexion", href: "/home", onclick:"{handleLogout}" },
 ];
 
 function classNames(...classes) {
@@ -140,6 +140,7 @@ function AddTask() {
                               {({ active }) => (
                                 <Link
                                   to={item.href}
+                                  onClick={item.onClick}
                                   className={classNames(
                                     active ? "bg-gray-100" : "",
                                     "block px-4 py-2 text-sm text-gray-700"

@@ -10,6 +10,7 @@ import Register from "./component/register"
 import Dashboard from "./component/dashboard"
 import AddTask from "./component/AddTask"
 import Chatbot from "./component/chatbot"
+import ProtectedRoute from "./component/ProtectedRoute"
 
 import UsersManagement from "./component/UsersManagement";
 import AddUser from "./component/AddUser";
@@ -24,7 +25,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add_tasks" element={<AddTask />} />
         <Route path="/chatbot" element={<Chatbot />} />
 

@@ -1,6 +1,9 @@
 import express from 'express';
+import "./Services/scheduler.js"
 import taskRouter from './Routes/taskRoutes.js';
 import userRouter from './Routes/userRoutes.js';
+import chatRouter from "./Routes/chatRoutes.js";
+import { authenticateUser } from "./Middlewares/authMiddleware.js";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -16,41 +19,11 @@ app.use(cors());
 // Routes existantes
 app.use('/api/tasks', taskRouter);
 app.use('/api/users', userRouter);
+app.use("/api/chat", chatRouter);
+app.use("/api/chat", authenticateUser);
 
 // Nouvelle route pour le chatbot avec Google AI
-app.post('/api/chat', async (req, res) => {
-    const { message } = req.body;
 
-    try {
-        const response = await axios.post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', // URL de l'API Google AI
-            {
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [{ text: message }],
-                    },
-                ],
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': process.env.GOOGLE_API_KEY,
-                },
-            }
-        );
-
-        // Renvoyer la réponse du chatbot
-        const botReply = response.data.candidates[0].content.parts[0].text;
-        res.json({ reply: botReply });
-    } catch (error) {
-        console.error('Error calling Google AI API:', error);
-        res.status(500).json({ 
-            error: 'Error processing your request', 
-            details: error.response?.data || error.message 
-        });
-    }
-});
 
 // Route d'accueil
 app.get('/', (req, res) => {

@@ -17,8 +17,8 @@ function Dashboard() {
   ];
 
   const userNavigation = [
-    { name: "Votre profil", href: "/profile" },
-    { name: "Déconnexion", href: "/logout" },
+    { name: "Votre profil", href: "/profile", onclick:"" },
+    { name: "Déconnexion", href: "/home", onclick:"{handleLogout}" },
   ];
 
   // Fonction utilitaire pour générer des classes conditionnelles
@@ -111,6 +111,7 @@ function Dashboard() {
                               {({ active }) => (
                                 <Link
                                   to={item.href}
+                                  onClick={item.onClick}
                                   className={classNames(
                                     active ? "bg-gray-100" : "",
                                     "block px-4 py-2 text-sm text-gray-700"
@@ -231,16 +232,18 @@ function Dashboard() {
                 </Link>
              </div>
             ) : tasks.length > 0 ? (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tasks.map((task) => (
                   <div key={task._id} className="p-4 bg-white shadow rounded">
-                    <h2 className="text-xl font-semibold">{task.title}</h2>
+                    <h2 className="text-lg font-semibold">{task.title}</h2>
                     <p>{task.description}</p>
                     <p className="text-sm text-gray-600">Priorité : {task.priority}</p>
                     <p className="text-sm text-gray-600">Statut : {task.status}</p>
+                    <p className="text-sm text-gray-600">Échéance : {new Date(task.dueDate).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
+
             ) : null}
           </div>
         </main>
