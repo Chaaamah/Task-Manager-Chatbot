@@ -89,3 +89,18 @@ export async function registerUser(data) {
         throw new Error(`Erreur lors de l'enregistrement de l'utilisateur: ${error.message}`);
     }
 }
+
+
+export async function getTasksByUserId(userId) {
+    try {
+        // Utiliser "find" pour récupérer toutes les tâches de l'utilisateur
+        const tasks = await TaskModel.find({ userId: userId });
+        if (tasks.length === 0) {
+            throw new Error('Aucune tâche trouvée pour cet utilisateur');
+        }
+        return tasks; // Retourne un tableau de tâches
+    } catch (error) {
+        console.error("Erreur dans getTasksByUserId (service) :", error);
+        throw new Error(`Erreur lors de la récupération des tâches par utilisateur: ${error.message}`);
+    }
+}

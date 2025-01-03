@@ -21,7 +21,6 @@ function Dashboard() {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
     { name: "AddTask", href: "/add_tasks", current: false },
-    { name: "Users", href: "/users", current: false },
     { name: "Chatbot", href: "/chatbot", current: false },
   ];
 
@@ -33,7 +32,11 @@ function Dashboard() {
   };
 
   const userNavigation = [
-    { name: "Votre profil", href: "/profile", onClick: () => {} },
+    {
+      name: "Votre profil",
+      href: "/profile",
+      onClick: () => navigate("/profile", { state: { user } }),
+    },
     { name: "Déconnexion", href: "/", onClick: handleLogout },
   ];
 
@@ -109,7 +112,7 @@ function Dashboard() {
     { name: "Low", value: tasks.filter(task => task.priority === "Low").length },
   ];
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+  const COLORS = ["#FFBB28", "#00C49F", "#0088FE"];
 
   const getUserNameById = (userId) => {
     const user = users.find((user) => user._id === userId);
@@ -424,12 +427,6 @@ function Dashboard() {
                       <div>
                         <h2 className="text-xl font-semibold text-gray-800 mb-2">{task.title}</h2>
                         <p className="text-gray-600 mb-4">{task.description}</p>
-                        <div className="flex items-center mb-3">
-                          <span className="text-sm font-medium text-gray-500">User :</span>
-                          <span className="ml-2 text-sm font-semibold text-blue-600">
-                            {getUserNameById(task.userId)}
-                          </span>
-                        </div>
                         <div className="flex items-center mb-3">
                           <span className="text-sm font-medium text-gray-500">Priority :</span>
                           <span

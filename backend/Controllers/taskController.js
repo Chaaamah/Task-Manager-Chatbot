@@ -20,10 +20,14 @@ export async function getTaskById(req, res) {
 
 export async function addTask(req, res) {
     try {
-        const task = await TaskService.addTask(req.body);
-        res.status(201).json(task); // Retourne la tâche créée
+      const task = await TaskService.addTask(req.body);
+      if (!task) {
+        throw new Error('La tâche n\'a pas pu être créée.');
+      }
+      res.status(201).json(task); // Retourne la tâche créée
     } catch (error) {
-        res.status(500).json({ message: 'Erreur lors de l\'ajout de la tâche.' });
+      console.error("Erreur dans addTask :", error);
+      res.status(500).json({ message: error.message || 'Erreur lors de l\'ajout de la tâche.' });
     }
 }
 
@@ -48,13 +52,16 @@ export async function deleteTask(req, res) {
 export async function getTasksByUserId(req, res) {
     try {
         const userId = req.params.userId;
+        console.log("User ID reçu :", userId); // Log pour déboguer
         const tasks = await TaskService.getTasksByUserId(userId);
+        console.log("Tâches récupérées :", tasks); // Log pour déboguer
         if (tasks.length > 0) {
             res.status(200).json(tasks);
         } else {
             res.status(404).json({ message: 'Aucune tâche trouvée pour cet utilisateur' });
         }
     } catch (error) {
+        console.error("Erreur dans getTasksByUserId :", error);
         res.status(500).json({ message: error.message });
     }
 }

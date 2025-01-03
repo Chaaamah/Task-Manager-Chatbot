@@ -13,7 +13,8 @@ const parseTaskMessage = (message) => {
     } else if (line.includes('Date d\'échéance :')) {
       taskDetails.dueDate = new Date(line.split('Date d\'échéance :')[1].trim());
     } else if (line.includes('Priorité :')) {
-      taskDetails.priority = line.split('Priorité :')[1].trim().toLowerCase();
+      const priority = line.split('Priorité :')[1].trim();
+      taskDetails.priority = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
     } else if (line.includes('Statut :')) {
       taskDetails.status = line.split('Statut :')[1].trim();
     }
@@ -30,6 +31,11 @@ export const handleChatMessage = async (req, res) => {
     console.log("Message reçu :", message);
     console.log("User ID :", userId);
 
+    if (!message) {
+      return res.status(400).json({ reply: "Le message est requis." });
+    }
+
+    // Ajouter une tâche
     if (message.toLowerCase().includes('ajoute')) {
       const taskDetails = parseTaskMessage(message);
       taskDetails.userId = userId; // Utilisez l'ID de l'utilisateur
@@ -44,16 +50,75 @@ export const handleChatMessage = async (req, res) => {
       }
     }
 
-    if (message.toLowerCase().includes('montre-moi')) {
-      const tasksResponse = await TaskController.getTasksByUserId({ params: { userId } });
-      if (tasksResponse && Array.isArray(tasksResponse)) {
-        const taskList = tasksResponse.map(task => `- ${task.title} (Priorité : ${task.priority}, Échéance : ${task.dueDate}, Statut : ${task.status})`).join('\n');
-        return res.json({ reply: `Voici vos tâches :\n${taskList}` });
-      } else {
-        return res.json({ reply: 'Aucune tâche trouvée.' });
-      }
+    // Supprimer une tâche par nom
+if (message.toLowerCase().includes('supprime')) {
+  const taskNameMatch = message.match(/supprime\s+(.+)/i); // Extraire le nom de la tâche après "supprime"
+  if (!taskNameMatch || !taskNameMatch[1]) {
+    return res.status(400).json({ reply: "Nom de la tâche manquant." });
+  }
+
+  const taskName = taskNameMatch[1].trim(); // Nom de la tâche
+  console.log("Nom de la tâche à supprimer :", taskName);
+
+  try {
+    // Récupérer la tâche par nom et userId
+    const tasksResponse = await TaskController.getTasksByUserId({ params: { userId } });
+    if (!tasksResponse || !Array.isArray(tasksResponse)) {
+      return res.status(404).json({ reply: "Aucune tâche trouvée pour cet utilisateur." });
     }
 
+    const taskToDelete = tasksResponse.find(task => task.title === taskName);
+    if (!taskToDelete) {
+      return res.status(404).json({ reply: `Aucune tâche trouvée avec le nom "${taskName}".` });
+    }
+
+    // Supprimer la tâche
+    await TaskController.deleteTask({ params: { id: taskToDelete._id } });
+    return res.json({ reply: `Tâche "${taskName}" supprimée avec succès.` });
+  } catch (error) {
+    console.error("Erreur lors de la suppression de la tâche :", error);
+    return res.status(500).json({ reply: "Erreur lors de la suppression de la tâche." });
+  }
+}
+
+// Modifier une tâche par nom
+if (message.toLowerCase().includes('modifie')) {
+  const taskNameMatch = message.match(/modifie\s+(.+)/i); // Extraire le nom de la tâche après "modifie"
+  if (!taskNameMatch || !taskNameMatch[1]) {
+    return res.status(400).json({ reply: "Nom de la tâche manquant." });
+  }
+
+  const taskName = taskNameMatch[1].trim(); // Nom de la tâche
+  console.log("Nom de la tâche à modifier :", taskName);
+
+  try {
+    // Récupérer la tâche par nom et userId
+    const tasksResponse = await TaskController.getTasksByUserId({ params: { userId } });
+    if (!tasksResponse || !Array.isArray(tasksResponse)) {
+      return res.status(404).json({ reply: "Aucune tâche trouvée pour cet utilisateur." });
+    }
+
+    const taskToUpdate = tasksResponse.find(task => task.title === taskName);
+    if (!taskToUpdate) {
+      return res.status(404).json({ reply: `Aucune tâche trouvée avec le nom "${taskName}".` });
+    }
+
+    // Extraire les nouveaux détails de la tâche
+    const taskDetails = parseTaskMessage(message);
+    taskDetails.userId = userId; // Utilisez l'ID de l'utilisateur
+
+    // Modifier la tâche
+    const updatedTask = await TaskController.updateTask({ params: { id: taskToUpdate._id }, body: taskDetails });
+    if (updatedTask && updatedTask.title) {
+      return res.json({ reply: `Tâche "${updatedTask.title}" modifiée avec succès.` });
+    } else {
+      return res.status(500).json({ reply: "Erreur lors de la modification de la tâche." });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la modification de la tâche :", error);
+    return res.status(500).json({ reply: "Erreur lors de la modification de la tâche." });
+  }
+}
     // Interaction standard avec le chatbot
     console.log("Appel à l'API Google Gemini...");
     const response = await axios.post(

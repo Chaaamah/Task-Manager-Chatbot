@@ -8,11 +8,20 @@ export async function getAllTasks() {
     }
 }
 
-export async function addTask(taskData) {
-    const task = new TaskModel(taskData);
-    await task.save();
-    return task;
-}
+export const addTask = async (taskData) => {
+    try {
+      if (!taskData.title || !taskData.userId) {
+        throw new Error('Le titre et l\'ID utilisateur sont obligatoires.');
+      }
+  
+      const task = new TaskModel(taskData);
+      await task.save();
+      return task; // Retourne la tâche créée
+    } catch (error) {
+      console.error("Erreur dans addTask (service) :", error);
+      throw new Error(`Erreur lors de la création de la tâche : ${error.message}`);
+    }
+  };
 
 export async function getTaskById(taskId) {
     try {
@@ -52,13 +61,15 @@ export async function deleteTask(id) {
 
 export async function getTasksByUserId(userId) {
     try {
-        // Utiliser "find" au lieu de "findOne" pour récupérer toutes les tâches
+        // Utiliser "find" pour récupérer toutes les tâches de l'utilisateur
         const tasks = await TaskModel.find({ userId: userId });
+        console.log("Tâches trouvées dans la base de données :", tasks); // Log pour déboguer
         if (tasks.length === 0) {
             throw new Error('Aucune tâche trouvée pour cet utilisateur');
         }
         return tasks; // Retourne un tableau de tâches
     } catch (error) {
+        console.error("Erreur dans getTasksByUserId (service) :", error);
         throw new Error(`Erreur lors de la récupération des tâches par utilisateur: ${error.message}`);
     }
 }

@@ -12,9 +12,7 @@ import AddTask from "./component/AddTask"
 import Chatbot from "./component/chatbot"
 import ProtectedRoute from "./component/ProtectedRoute"
 
-import UsersManagement from "./component/UsersManagement";
-import AddUser from "./component/AddUser";
-import EditUser from "./component/EditUser";
+import Profil from "./component/Profil";
   
 
 function App() {
@@ -29,9 +27,9 @@ function App() {
         <Route path="/add_tasks" element={<AddTask />} />
         <Route path="/chatbot" element={<Chatbot />} />
 
-        <Route path="/users" element={<UsersManagement />} />
-        <Route path="/add-user" element={<AddUser />} />
-        <Route path="/edit-user/:userId" element={<EditUser />} />
+        <Route path="/profile" element={<Profil />} />
+
+        
       </Routes>
     </Router>
     </div>

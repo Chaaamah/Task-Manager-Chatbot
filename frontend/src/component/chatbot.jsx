@@ -7,7 +7,6 @@ import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
   { name: "AddTask", href: "/add_tasks", current: false },
-  { name: "Users", href: "/users", current: false },
   { name: "Chatbot", href: "/chatbot", current: false },
 ];
 
@@ -45,11 +44,21 @@ function Chatbot() {
     if (!input.trim()) return;
 
     try {
-      const response = await axios.post("http://localhost:5000/api/chat", { message: input, userId }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const token = localStorage.getItem("token");
+      console.log("Token JWT envoyé :", token); // Log pour déboguer
+
+      const response = await axios.post(
+        "http://localhost:5000/api/chat",
+        { message: input, userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
+
+      console.log("Réponse de l'API :", response.data); // Log pour déboguer
+
       setMessages([
         ...messages,
         { role: "user", content: input },
@@ -63,6 +72,7 @@ function Chatbot() {
         { role: "user", content: input },
         { role: "bot", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
       ]);
+      setError("Erreur lors de la communication avec le chatbot.");
     }
   };
 
@@ -200,7 +210,11 @@ function Chatbot() {
         <div className="flex-grow overflow-y-auto bg-white p-7 rounded shadow-md">
           {messages.map((msg, index) => (
             <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-              <span className={`inline-block p-2 rounded ${msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-300"}`}>
+              <span
+                className={`inline-block p-2 rounded ${
+                  msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-300"
+                }`}
+              >
                 {msg.content}
               </span>
             </div>
