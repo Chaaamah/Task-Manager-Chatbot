@@ -3,11 +3,17 @@ import axios from "axios";
 import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]); // État pour stocker la liste des utilisateurs
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
@@ -17,8 +23,8 @@ function Dashboard() {
   ];
 
   const userNavigation = [
-    { name: "Votre profil", href: "/profile", onclick:"" },
-    { name: "Déconnexion", href: "/home", onclick:"{handleLogout}" },
+    { name: "Votre profil", href: "/profile", onclick: "" },
+    { name: "Déconnexion", href: "/home", onclick: "{handleLogout}" },
   ];
 
   // Fonction utilitaire pour générer des classes conditionnelles
@@ -44,12 +50,67 @@ function Dashboard() {
     // Récupération des tâches associées à l'utilisateur connecté
     axios
       .get(`http://localhost:5000/api/tasks/user/${storedUser.id}`)
-      .then((response) => setTasks(response.data))
+      .then((response) => {
+        setTasks(response.data);
+        setFilteredTasks(response.data);
+      })
       .catch((error) => {
         console.error("Erreur lors du chargement des tâches :", error);
         setError("Impossible de charger les tâches.");
       });
+
+    // Récupération de la liste des utilisateurs
+    axios
+      .get("http://localhost:5000/api/users")
+      .then((response) => {
+        setUsers(response.data);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement des utilisateurs :", error);
+      });
   }, []);
+
+  useEffect(() => {
+    let filtered = tasks;
+
+    if (searchTerm) {
+      filtered = filtered.filter(task =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (priorityFilter) {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter(task => task.status === statusFilter);
+    }
+
+    setFilteredTasks(filtered);
+  }, [searchTerm, priorityFilter, statusFilter, tasks]);
+
+  // Prepare data for charts
+  const taskStatusData = [
+    { name: "Pending", value: tasks.filter(task => task.status === "Pending").length },
+    { name: "In Progress", value: tasks.filter(task => task.status === "In Progress").length },
+    { name: "Completed", value: tasks.filter(task => task.status === "Completed").length },
+  ];
+
+  const taskPriorityData = [
+    { name: "High", value: tasks.filter(task => task.priority === "High").length },
+    { name: "Medium", value: tasks.filter(task => task.priority === "Medium").length },
+    { name: "Low", value: tasks.filter(task => task.priority === "Low").length },
+  ];
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+
+  // Fonction pour obtenir le nom de l'utilisateur par son ID
+  const getUserNameById = (userId) => {
+    const user = users.find((user) => user._id === userId);
+    return user ? user.name : "Utilisateur inconnu";
+  };
 
   return (
     <>
@@ -193,19 +254,16 @@ function Dashboard() {
           )}
         </Disclosure>
 
-
         {/* En-tête */}
         <header className="bg-white shadow">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {error ? (
               <div>
-              <h2>Dashboard</h2>
-              
-            </div>
+                <h2>Dashboard</h2>
+              </div>
             ) : user ? (
               <div>
                 <h2>Dashboard</h2>
-                
               </div>
             ) : (
               <p>Chargement des informations utilisateur...</p>
@@ -215,6 +273,72 @@ function Dashboard() {
 
         <main>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-5 mt-5">
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white p-4 shadow-lg rounded-lg border border-gray-100">
+                <h3 className="text-lg font-semibold mb-4">Tasks by Status</h3>
+                <PieChart width={400} height={300}>
+                  <Pie
+                    data={taskStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {taskStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </div>
+              <div className="bg-white p-4 shadow-lg rounded-lg border border-gray-100">
+                <h3 className="text-lg font-semibold mb-4">Tasks by Priority</h3>
+                <BarChart width={400} height={300} data={taskPriorityData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill="#8884d8" />
+                </BarChart>
+              </div>
+            </div>
+
+            {/* Search and Filter Section */}
+            <div className="mb-6 flex flex-col md:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="Rechercher une tâche..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="p-2 border rounded"
+              />
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="p-2 border rounded"
+              >
+                <option value="">All priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="p-2 border rounded"
+              >
+                <option value="">All statuts</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            {/* Task List Section */}
             {error ? (
               <div className="flex flex-col items-center justify-center text-center mt-10">
                 <img 
@@ -222,33 +346,77 @@ function Dashboard() {
                   alt="Aucune tâche" 
                   className="mb-4 w-24 h-24"
                 />
-                <h3 className="text-xl font-bold text-gray-700">Aucune tâche trouvée</h3>
-                <p className="text-gray-500">Vous n'avez pas encore créé de tâche.</p>
+                <h3 className="text-xl font-bold text-gray-700">No tasks found</h3>
+                <p className="text-gray-500">You have not created a task yet.</p>
                 <Link 
                   to="/add_tasks" 
                   className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  Ajouter une tâche
+                  Add Task
                 </Link>
-             </div>
-            ) : tasks.length > 0 ? (
+              </div>
+            ) : filteredTasks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasks.map((task) => (
-                  <div key={task._id} className="p-4 bg-white shadow rounded">
-                    <h2 className="text-lg font-semibold">{task.title}</h2>
-                    <p>{task.description}</p>
-                    <p className="text-sm text-gray-600">Priorité : {task.priority}</p>
-                    <p className="text-sm text-gray-600">Statut : {task.status}</p>
-                    <p className="text-sm text-gray-600">Échéance : {new Date(task.dueDate).toLocaleDateString()}</p>
+                {filteredTasks.map((task) => (
+                  <div key={task._id} className="p-6 bg-white shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{task.title}</h2>
+                    <p className="text-gray-600 mb-4">{task.description}</p>
+                    <div className="flex items-center mb-3">
+                      <span className="text-sm font-medium text-gray-500">User :</span>
+                      <span className="ml-2 text-sm font-semibold text-blue-600">
+                        {getUserNameById(task.userId)}
+                      </span>
+                    </div>
+                    <div className="flex items-center mb-3">
+                      <span className="text-sm font-medium text-gray-500">Priority :</span>
+                      <span
+                        className={`ml-2 text-sm font-semibold ${
+                          task.priority === "High"
+                            ? "text-red-600"
+                            : task.priority === "Medium"
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
+                    <div className="flex items-center mb-3">
+                      <span className="text-sm font-medium text-gray-500">Statut :</span>
+                      <span
+                        className={`ml-2 text-sm font-semibold ${
+                          task.status === "Pending"
+                            ? "text-red-600"
+                            : task.status === "In Progress"
+                            ? "text-blue-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {task.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-500">Due date :</span>
+                      <span className="ml-2 text-sm text-gray-600">
+                        {new Date(task.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-
-            ) : null}
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center mt-10">
+                <img 
+                  src="https://via.placeholder.com/150" 
+                  alt="Aucune tâche" 
+                  className="mb-4 w-24 h-24"
+                />
+                <h3 className="text-xl font-bold text-gray-700">Aucune tâche trouvée</h3>
+                <p className="text-gray-500">Aucune tâche ne correspond à vos critères de recherche.</p>
+              </div>
+            )}
           </div>
         </main>
-
-
       </div>
     </>
   );

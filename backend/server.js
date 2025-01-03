@@ -20,9 +20,7 @@ app.use(cors());
 app.use('/api/tasks', taskRouter);
 app.use('/api/users', userRouter);
 app.use("/api/chat", chatRouter);
-app.use("/api/chat", authenticateUser);
-
-// Nouvelle route pour le chatbot avec Google AI
+//app.use("/api/chat", authenticateUser);
 
 
 // Route d'accueil

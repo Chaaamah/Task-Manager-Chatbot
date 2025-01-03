@@ -1,52 +1,74 @@
-import * as TaskService from "../Services/taskService.js";
-import axios from "axios";
+import * as TaskController from '../Controllers/taskController.js';
+import axios from 'axios';
+
+const parseTaskMessage = (message) => {
+  const lines = message.split('\n');
+  const taskDetails = {};
+
+  lines.forEach((line) => {
+    if (line.includes('Nom :')) {
+      taskDetails.title = line.split('Nom :')[1].trim();
+    } else if (line.includes('Description :')) {
+      taskDetails.description = line.split('Description :')[1].trim();
+    } else if (line.includes('Date d\'échéance :')) {
+      taskDetails.dueDate = new Date(line.split('Date d\'échéance :')[1].trim());
+    } else if (line.includes('Priorité :')) {
+      taskDetails.priority = line.split('Priorité :')[1].trim().toLowerCase();
+    }
+  });
+
+  return taskDetails;
+};
 
 export const handleChatMessage = async (req, res) => {
   const { message } = req.body;
-  console.log("Requête reçue par le chatbot :", req.body);
+  const userId = req.userId; // Récupérez l'ID de l'utilisateur à partir de req.userId
+
   try {
-    if (message.toLowerCase().includes("ajoute")) {
-      // Ajout d'une tâche
-      const taskData = {
-        title: "Réunion", // Extraire dynamiquement si possible
-        dueDate: new Date(),
-        status: "Pending",
-        priority: "Medium",
-        userId: req.user.id, // Récupérer l'utilisateur connecté
-      };
+    console.log("Message reçu :", message);
+    console.log("User ID :", userId);
 
-      const task = await TaskService.addTask(taskData);
-      return res.json({ reply: `Tâche "${task.title}" ajoutée avec succès.` });
+    if (message.toLowerCase().includes('ajoute')) {
+      const taskDetails = parseTaskMessage(message);
+      taskDetails.userId = userId; // Utilisez l'ID de l'utilisateur
+      console.log("Détails de la tâche :", taskDetails);
+
+      // Appel de la fonction addTask
+      const taskResponse = await TaskController.addTask({ body: taskDetails });
+      if (taskResponse && taskResponse.title) {
+        return res.json({ reply: `Tâche "${taskResponse.title}" ajoutée avec succès.` });
+      } else {
+        return res.status(500).json({ reply: "Erreur lors de l'ajout de la tâche." });
+      }
     }
 
-    if (message.toLowerCase().includes("change")) {
-      // Modification d'une tâche
-      const taskId = "id_de_la_tâche"; // Remplacez par une extraction NLP si possible
-      const updatedData = { priority: "High" };
-
-      const task = await TaskService.updateTask(taskId, updatedData);
-      return res.json({ reply: `La priorité de "${task.title}" a été mise à jour.` });
-    }
-
-    if (message.toLowerCase().includes("supprime")) {
-      // Suppression d'une tâche
-      const taskId = "id_de_la_tâche"; // Remplacez par une extraction NLP si possible
-
-      await TaskService.deleteTask(taskId);
-      return res.json({ reply: `La tâche a été supprimée avec succès.` });
+    if (message.toLowerCase().includes('montre-moi')) {
+      const tasksResponse = await TaskController.getTasksByUserId({ params: { userId } });
+      if (tasksResponse && Array.isArray(tasksResponse)) {
+        const taskList = tasksResponse.map(task => `- ${task.title} (Priorité : ${task.priority}, Échéance : ${task.dueDate})`).join('\n');
+        return res.json({ reply: `Voici vos tâches :\n${taskList}` });
+      } else {
+        return res.json({ reply: 'Aucune tâche trouvée.' });
+      }
     }
 
     // Interaction standard avec le chatbot
+    console.log("Appel à l'API Google Gemini...");
     const response = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-      { contents: [{ role: "user", parts: [{ text: message }] }] },
-      { headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GOOGLE_API_KEY } }
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      {
+        contents: [{ parts: [{ text: message }] }],
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
 
     const botReply = response.data.candidates[0].content.parts[0].text;
-    return res.json({ reply: botReply });
+    console.log("Réponse du chatbot :", botReply);
+    res.json({ reply: botReply });
   } catch (error) {
     console.error("Erreur API Chatbot :", error);
-    res.status(500).json({ error: "Erreur lors du traitement de la demande." });
+    res.status(500).json({ reply: "Désolé, une erreur s’est produite. Veuillez réessayer." });
   }
 };

@@ -1,9 +1,10 @@
-import express from "express";
-import * as chatController from "../Controllers/chatController.js";
+import express from 'express';
+import { handleChatMessage } from '../Controllers/chatController.js';
+import { authenticateUser } from '../Middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// Route pour gérer les messages de chat
-router.route("/").post( chatController.handleChatMessage);
+// Protéger la route du chatbot avec le middleware d'authentification
+router.post('/', authenticateUser, handleChatMessage);
 
 export default router;

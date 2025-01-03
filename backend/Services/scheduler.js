@@ -18,3 +18,4 @@ schedule.scheduleJob("0 * * * *", async () => {
     console.error("Erreur lors de la vérification des rappels :", error);
   }
 });
+

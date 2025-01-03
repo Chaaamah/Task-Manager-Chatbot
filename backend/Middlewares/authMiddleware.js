@@ -17,8 +17,9 @@ export const authenticateUser = async (req, res, next) => {
     }
 
     req.user = user; // Attachez l'utilisateur à la requête
+    req.userId = decoded.id; // Ajoutez l'ID de l'utilisateur à la requête
     next();
   } catch (error) {
-    res.status(401).json({ message: "Authentification échouée." });
+    res.status(401).json({ message: "Token invalide." });
   }
 };

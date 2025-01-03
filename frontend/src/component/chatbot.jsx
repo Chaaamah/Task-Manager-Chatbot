@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
   { name: "AddTask", href: "/add_tasks", current: false },
@@ -13,8 +12,8 @@ const navigation = [
 ];
 
 const userNavigation = [
-  { name: "Votre profil", href: "/profile", onclick:"" },
-  { name: "Déconnexion", href: "/home", onclick:"{handleLogout}" },
+  { name: "Votre profil", href: "/profile", onclick: "" },
+  { name: "Déconnexion", href: "/home", onclick: "{handleLogout}" },
 ];
 
 function classNames(...classes) {
@@ -24,21 +23,16 @@ function classNames(...classes) {
 function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Récupération de l'utilisateur connecté
-  const userId = localStorage.getItem("userId"); // Récupère l'ID utilisateur stocké après connexion
-// Récupération des informations de l'utilisateur connecté
-  const Storeuser = JSON.parse(localStorage.getItem("user"));
+  const userId = localStorage.getItem("userId");
   const user = {
     id: localStorage.getItem("userId"),
     name: localStorage.getItem("userName"),
     email: localStorage.getItem("userEmail"),
   };
 
-  // Si aucun utilisateur connecté, afficher une erreur
   if (!userId) {
     return (
       <div className="text-center mt-5">
@@ -47,170 +41,162 @@ function Chatbot() {
     );
   }
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
-    axios.post("http://localhost:5000/api/chat", { message: input })
-      .then((response) => {
-        setMessages([
-          ...messages,
-          { role: "user", content: input },
-          { role: "bot", content: response.data.reply },
-        ]);
-        setInput("");
-      })
-      .catch((error) => {
-        console.error("Erreur chatbot :", error);
-        setMessages([
-          ...messages,
-          { role: "user", content: input },
-          { role: "bot", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
-        ]);
+    try {
+      const response = await axios.post("http://localhost:5000/api/chat", { message: input, userId }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
+      setMessages([
+        ...messages,
+        { role: "user", content: input },
+        { role: "bot", content: response.data.reply },
+      ]);
+      setInput("");
+    } catch (error) {
+      console.error("Erreur chatbot :", error);
+      setMessages([
+        ...messages,
+        { role: "user", content: input },
+        { role: "bot", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
+      ]);
+    }
   };
 
   return (
     <div className="min-h-full">
-    
       <Disclosure as="nav" className="bg-gray-800">
-          {({ open }) => (
-            <>
-              {/* Barre de navigation principale */}
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
-                  <div className="flex items-center">
-                    {/* Navigation visible pour les écrans moyens et grands */}
-                    <div className="hidden md:block">
-                      <div className="ml-10 flex items-baseline space-x-4">
-                        {navigation.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            className={classNames(
-                              item.current
-                                ? "bg-gray-900 text-white"
-                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                              "rounded-md px-3 py-2 text-sm font-medium"
-                            )}
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+        {({ open }) => (
+          <>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="flex h-16 items-center justify-between">
+                <div className="flex items-center">
                   <div className="hidden md:block">
-                    <div className="ml-4 flex items-center md:ml-6">
-                      {/* Bouton de notifications */}
-                      <button
-                        type="button"
-                        className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                      >
-                        <span className="sr-only">Voir les notifications</span>
-                        <BellIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                      {/* Menu utilisateur */}
-                      <Menu as="div" className="relative ml-3">
-                        <div>
-                          <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                            <span className="sr-only">Ouvrir le menu utilisateur</span>
-                            <img
-                              className="h-8 w-8 rounded-full"
-                              src="https://via.placeholder.com/150"
-                              alt="Utilisateur"
-                            />
-                          </Menu.Button>
-                        </div>
-                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          {userNavigation.map((item) => (
-                            <Menu.Item key={item.name}>
-                              {({ active }) => (
-                                <Link
-                                  to={item.href}
-                                  onClick={item.onClick}
-                                  className={classNames(
-                                    active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
-                                  )}
-                                >
-                                  {item.name}
-                                </Link>
-                              )}
-                            </Menu.Item>
-                          ))}
-                        </Menu.Items>
-                      </Menu>
+                    <div className="ml-10 flex items-baseline space-x-4">
+                      {navigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className={classNames(
+                            item.current
+                              ? "bg-gray-900 text-white"
+                              : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                            "rounded-md px-3 py-2 text-sm font-medium"
+                          )}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
                     </div>
-                  </div>
-                  <div className="-mr-2 flex md:hidden">
-                    {/* Bouton pour ouvrir le menu mobile */}
-                    <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                      <span className="sr-only">Ouvrir le menu principal</span>
-                      {open ? (
-                        <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                      ) : (
-                        <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                      )}
-                    </Disclosure.Button>
                   </div>
                 </div>
+                <div className="hidden md:block">
+                  <div className="ml-4 flex items-center md:ml-6">
+                    <button
+                      type="button"
+                      className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    >
+                      <span className="sr-only">Voir les notifications</span>
+                      <BellIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                    <Menu as="div" className="relative ml-3">
+                      <div>
+                        <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                          <span className="sr-only">Ouvrir le menu utilisateur</span>
+                          <img
+                            className="h-8 w-8 rounded-full"
+                            src="https://via.placeholder.com/150"
+                            alt="Utilisateur"
+                          />
+                        </Menu.Button>
+                      </div>
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {userNavigation.map((item) => (
+                          <Menu.Item key={item.name}>
+                            {({ active }) => (
+                              <Link
+                                to={item.href}
+                                onClick={item.onClick}
+                                className={classNames(
+                                  active ? "bg-gray-100" : "",
+                                  "block px-4 py-2 text-sm text-gray-700"
+                                )}
+                              >
+                                {item.name}
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        ))}
+                      </Menu.Items>
+                    </Menu>
+                  </div>
+                </div>
+                <div className="-mr-2 flex md:hidden">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                    <span className="sr-only">Ouvrir le menu principal</span>
+                    {open ? (
+                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                    ) : (
+                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                    )}
+                  </Disclosure.Button>
+                </div>
               </div>
+            </div>
 
-              {/* Menu mobile */}
-              <Disclosure.Panel className="md:hidden">
-                <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-                  {/* Navigation pour écran réduit */}
-                  {navigation.map((item) => (
+            <Disclosure.Panel className="md:hidden">
+              <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+                {navigation.map((item) => (
+                  <Disclosure.Button
+                    key={item.name}
+                    as={Link}
+                    to={item.href}
+                    className={classNames(
+                      item.current
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                      "block rounded-md px-3 py-2 text-base font-medium"
+                    )}
+                  >
+                    {item.name}
+                  </Disclosure.Button>
+                ))}
+              </div>
+              <div className="border-t border-gray-700 pb-3 pt-4">
+                <div className="flex items-center px-5">
+                  <div className="shrink-0">
+                    <img
+                      className="h-10 w-10 rounded-full"
+                      src="https://via.placeholder.com/150"
+                      alt="Utilisateur"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-base font-medium text-white">{user?.name || "Utilisateur"}</div>
+                    <div className="text-sm font-medium text-gray-400">{user?.email || "email@example.com"}</div>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1 px-2">
+                  {userNavigation.map((item) => (
                     <Disclosure.Button
                       key={item.name}
                       as={Link}
                       to={item.href}
-                      className={classNames(
-                        item.current
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                        "block rounded-md px-3 py-2 text-base font-medium"
-                      )}
+                      className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                     >
                       {item.name}
                     </Disclosure.Button>
                   ))}
                 </div>
-                {/* Menu utilisateur pour écran réduit */}
-                <div className="border-t border-gray-700 pb-3 pt-4">
-                  <div className="flex items-center px-5">
-                    <div className="shrink-0">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src="https://via.placeholder.com/150"
-                        alt="Utilisateur"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-white">{user?.name || "Utilisateur"}</div>
-                      <div className="text-sm font-medium text-gray-400">{user?.email || "email@example.com"}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 space-y-1 px-2">
-                    {userNavigation.map((item) => (
-                      <Disclosure.Button
-                        key={item.name}
-                        as={Link}
-                        to={item.href}
-                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                      >
-                        {item.name}
-                      </Disclosure.Button>
-                    ))}
-                  </div>
-                </div>
-              </Disclosure.Panel>
-            </>
-          )}
-       </Disclosure>
+              </div>
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
       <div className="flex flex-col p-12 bg-gray-100 h-screen">
-        
-
         <div className="flex-grow overflow-y-auto bg-white p-7 rounded shadow-md">
           {messages.map((msg, index) => (
             <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
@@ -233,11 +219,9 @@ function Chatbot() {
             Envoyer
           </button>
         </div>
-      </div> 
-    
+      </div>
     </div>
   );
 }
-
 
 export default Chatbot;

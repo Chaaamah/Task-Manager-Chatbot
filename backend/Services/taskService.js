@@ -8,12 +8,10 @@ export async function getAllTasks() {
     }
 }
 
-export async function addTask(task) {
-    try {
-        return await TaskModel.create(task);
-    } catch (error) {
-        throw new Error(`Erreur lors de l'ajout de la tâche: ${error.message}`);
-    }
+export async function addTask(taskData) {
+    const task = new TaskModel(taskData);
+    await task.save();
+    return task;
 }
 
 export async function getTaskById(taskId) {
