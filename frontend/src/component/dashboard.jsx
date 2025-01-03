@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Disclosure, Menu } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { Link, useNavigate } from "react-router-dom"; // Utiliser useNavigate au lieu de useHistory
+import { Bars3Icon, BellIcon, XMarkIcon, PencilIcon, TrashIcon, CheckIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 
 function Dashboard() {
@@ -14,7 +14,9 @@ function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const navigate = useNavigate(); // Utiliser useNavigate au lieu de useHistory
+  const [editingTaskId, setEditingTaskId] = useState(null); // ID de la tâche en cours d'édition
+  const [editedTask, setEditedTask] = useState({}); // Données temporaires de la tâche en cours d'édition
+  const navigate = useNavigate();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
@@ -23,9 +25,16 @@ function Dashboard() {
     { name: "Chatbot", href: "/chatbot", current: false },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    navigate("/");
+  };
+
   const userNavigation = [
-    { name: "Votre profil", href: "/profile", onclick: "" },
-    { name: "Déconnexion", href: "/", onclick: "{handleLogout}" },
+    { name: "Votre profil", href: "/profile", onClick: () => {} },
+    { name: "Déconnexion", href: "/", onClick: handleLogout },
   ];
 
   function classNames(...classes) {
@@ -107,11 +116,6 @@ function Dashboard() {
     return user ? user.name : "Utilisateur inconnu";
   };
 
-  const handleEditTask = (taskId) => {
-    console.log("Modifier la tâche avec l'ID :", taskId);
-    navigate(`/edit_task/${taskId}`); // Utiliser navigate au lieu de history.push
-  };
-
   const handleDeleteTask = (taskId) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
       axios
@@ -123,6 +127,20 @@ function Dashboard() {
         .catch((error) => {
           console.error("Erreur lors de la suppression de la tâche :", error);
         });
+    }
+  };
+
+  const handleSaveTask = async (taskId) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/api/tasks/${taskId}`, editedTask);
+      const updatedTasks = tasks.map((task) =>
+        task._id === taskId ? response.data : task
+      );
+      setTasks(updatedTasks);
+      setFilteredTasks(updatedTasks);
+      setEditingTaskId(null); // Quitter le mode édition
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la tâche :", error);
     }
   };
 
@@ -354,62 +372,117 @@ function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTasks.map((task) => (
                   <div key={task._id} className="p-6 bg-white shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{task.title}</h2>
-                    <p className="text-gray-600 mb-4">{task.description}</p>
-                    <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium text-gray-500">User :</span>
-                      <span className="ml-2 text-sm font-semibold text-blue-600">
-                        {getUserNameById(task.userId)}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium text-gray-500">Priority :</span>
-                      <span
-                        className={`ml-2 text-sm font-semibold ${
-                          task.priority === "High"
-                            ? "text-red-600"
-                            : task.priority === "Medium"
-                            ? "text-yellow-600"
-                            : "text-green-600"
-                        }`}
-                      >
-                        {task.priority}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium text-gray-500">Statut :</span>
-                      <span
-                        className={`ml-2 text-sm font-semibold ${
-                          task.status === "Pending"
-                            ? "text-red-600"
-                            : task.status === "In Progress"
-                            ? "text-blue-600"
-                            : "text-green-600"
-                        }`}
-                      >
-                        {task.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium text-gray-500">Due date :</span>
-                      <span className="ml-2 text-sm text-gray-600">
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => handleEditTask(task._id)}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTask(task._id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
+                    {editingTaskId === task._id ? (
+                      // Mode édition
+                      <div>
+                        <input
+                          type="text"
+                          value={editedTask.title || task.title}
+                          onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+                          className="w-full p-2 mb-2 border rounded"
+                        />
+                        <textarea
+                          value={editedTask.description || task.description}
+                          onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                          className="w-full p-2 mb-2 border rounded"
+                        />
+                        <select
+                          value={editedTask.priority || task.priority}
+                          onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value })}
+                          className="w-full p-2 mb-2 border rounded"
+                        >
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                        </select>
+                        <select
+                          value={editedTask.status || task.status}
+                          onChange={(e) => setEditedTask({ ...editedTask, status: e.target.value })}
+                          className="w-full p-2 mb-2 border rounded"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                        </select>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => handleSaveTask(task._id)}
+                            className="text-green-500 hover:text-green-700"
+                          >
+                            <CheckIcon className="h-5 w-5" /> {/* Icône pour enregistrer */}
+                          </button>
+                          <button
+                            onClick={() => setEditingTaskId(null)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <XCircleIcon className="h-5 w-5" /> {/* Icône pour annuler */}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Mode affichage
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-800 mb-2">{task.title}</h2>
+                        <p className="text-gray-600 mb-4">{task.description}</p>
+                        <div className="flex items-center mb-3">
+                          <span className="text-sm font-medium text-gray-500">User :</span>
+                          <span className="ml-2 text-sm font-semibold text-blue-600">
+                            {getUserNameById(task.userId)}
+                          </span>
+                        </div>
+                        <div className="flex items-center mb-3">
+                          <span className="text-sm font-medium text-gray-500">Priority :</span>
+                          <span
+                            className={`ml-2 text-sm font-semibold ${
+                              task.priority === "High"
+                                ? "text-red-600"
+                                : task.priority === "Medium"
+                                ? "text-yellow-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {task.priority}
+                          </span>
+                        </div>
+                        <div className="flex items-center mb-3">
+                          <span className="text-sm font-medium text-gray-500">Statut :</span>
+                          <span
+                            className={`ml-2 text-sm font-semibold ${
+                              task.status === "Pending"
+                                ? "text-red-600"
+                                : task.status === "In Progress"
+                                ? "text-blue-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {task.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center mb-3">
+                          <span className="text-sm font-medium text-gray-500">Due date :</span>
+                          <span className="ml-2 text-sm text-gray-600">
+                            {new Date(task.dueDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingTaskId(task._id);
+                              setEditedTask({ ...task });
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTask(task._id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
