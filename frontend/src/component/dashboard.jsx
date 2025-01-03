@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Disclosure, Menu } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Bars3Icon, BellIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Link, useNavigate } from "react-router-dom"; // Utiliser useNavigate au lieu de useHistory
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
-  const [users, setUsers] = useState([]); // État pour stocker la liste des utilisateurs
+  const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const navigate = useNavigate(); // Utiliser useNavigate au lieu de useHistory
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
@@ -24,16 +25,14 @@ function Dashboard() {
 
   const userNavigation = [
     { name: "Votre profil", href: "/profile", onclick: "" },
-    { name: "Déconnexion", href: "/home", onclick: "{handleLogout}" },
+    { name: "Déconnexion", href: "/", onclick: "{handleLogout}" },
   ];
 
-  // Fonction utilitaire pour générer des classes conditionnelles
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
 
   useEffect(() => {
-    // Récupération des informations utilisateur depuis le localStorage
     const storedUser = {
       id: localStorage.getItem("userId"),
       name: localStorage.getItem("userName"),
@@ -47,7 +46,6 @@ function Dashboard() {
 
     setUser(storedUser);
 
-    // Récupération des tâches associées à l'utilisateur connecté
     axios
       .get(`http://localhost:5000/api/tasks/user/${storedUser.id}`)
       .then((response) => {
@@ -59,7 +57,6 @@ function Dashboard() {
         setError("Impossible de charger les tâches.");
       });
 
-    // Récupération de la liste des utilisateurs
     axios
       .get("http://localhost:5000/api/users")
       .then((response) => {
@@ -91,7 +88,6 @@ function Dashboard() {
     setFilteredTasks(filtered);
   }, [searchTerm, priorityFilter, statusFilter, tasks]);
 
-  // Prepare data for charts
   const taskStatusData = [
     { name: "Pending", value: tasks.filter(task => task.status === "Pending").length },
     { name: "In Progress", value: tasks.filter(task => task.status === "In Progress").length },
@@ -106,24 +102,39 @@ function Dashboard() {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
-  // Fonction pour obtenir le nom de l'utilisateur par son ID
   const getUserNameById = (userId) => {
     const user = users.find((user) => user._id === userId);
     return user ? user.name : "Utilisateur inconnu";
   };
 
+  const handleEditTask = (taskId) => {
+    console.log("Modifier la tâche avec l'ID :", taskId);
+    navigate(`/edit_task/${taskId}`); // Utiliser navigate au lieu de history.push
+  };
+
+  const handleDeleteTask = (taskId) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
+      axios
+        .delete(`http://localhost:5000/api/tasks/${taskId}`)
+        .then(() => {
+          setTasks(tasks.filter(task => task._id !== taskId));
+          setFilteredTasks(filteredTasks.filter(task => task._id !== taskId));
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la suppression de la tâche :", error);
+        });
+    }
+  };
+
   return (
     <>
       <div className="min-h-full">
-        {/* Barre de navigation */}
         <Disclosure as="nav" className="bg-gray-800">
           {({ open }) => (
             <>
-              {/* Barre de navigation principale */}
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                   <div className="flex items-center">
-                    {/* Navigation visible pour les écrans moyens et grands */}
                     <div className="hidden md:block">
                       <div className="ml-10 flex items-baseline space-x-4">
                         {navigation.map((item) => (
@@ -145,7 +156,6 @@ function Dashboard() {
                   </div>
                   <div className="hidden md:block">
                     <div className="ml-4 flex items-center md:ml-6">
-                      {/* Bouton de notifications */}
                       <button
                         type="button"
                         className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
@@ -153,8 +163,6 @@ function Dashboard() {
                         <span className="sr-only">Voir les notifications</span>
                         <BellIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
-
-                      {/* Menu utilisateur */}
                       <Menu as="div" className="relative ml-3">
                         <div>
                           <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -188,7 +196,6 @@ function Dashboard() {
                     </div>
                   </div>
                   <div className="-mr-2 flex md:hidden">
-                    {/* Bouton pour ouvrir le menu mobile */}
                     <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                       <span className="sr-only">Ouvrir le menu principal</span>
                       {open ? (
@@ -200,11 +207,8 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-
-              {/* Menu mobile */}
               <Disclosure.Panel className="md:hidden">
                 <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-                  {/* Navigation pour écran réduit */}
                   {navigation.map((item) => (
                     <Disclosure.Button
                       key={item.name}
@@ -221,7 +225,6 @@ function Dashboard() {
                     </Disclosure.Button>
                   ))}
                 </div>
-                {/* Menu utilisateur pour écran réduit */}
                 <div className="border-t border-gray-700 pb-3 pt-4">
                   <div className="flex items-center px-5">
                     <div className="shrink-0">
@@ -253,8 +256,6 @@ function Dashboard() {
             </>
           )}
         </Disclosure>
-
-        {/* En-tête */}
         <header className="bg-white shadow">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {error ? (
@@ -270,10 +271,8 @@ function Dashboard() {
             )}
           </div>
         </header>
-
         <main>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-5 mt-5">
-            {/* Charts Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-white p-4 shadow-lg rounded-lg border border-gray-100">
                 <h3 className="text-lg font-semibold mb-4">Tasks by Status</h3>
@@ -306,8 +305,6 @@ function Dashboard() {
                 </BarChart>
               </div>
             </div>
-
-            {/* Search and Filter Section */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
               <input
                 type="text"
@@ -337,8 +334,6 @@ function Dashboard() {
                 <option value="Completed">Completed</option>
               </select>
             </div>
-
-            {/* Task List Section */}
             {error ? (
               <div className="flex flex-col items-center justify-center text-center mt-10">
                 <img 
@@ -395,11 +390,25 @@ function Dashboard() {
                         {task.status}
                       </span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-3">
                       <span className="text-sm font-medium text-gray-500">Due date :</span>
                       <span className="ml-2 text-sm text-gray-600">
                         {new Date(task.dueDate).toLocaleDateString()}
                       </span>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => handleEditTask(task._id)}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTask(task._id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 ))}

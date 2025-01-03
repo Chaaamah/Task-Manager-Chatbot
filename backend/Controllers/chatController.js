@@ -14,6 +14,8 @@ const parseTaskMessage = (message) => {
       taskDetails.dueDate = new Date(line.split('Date d\'échéance :')[1].trim());
     } else if (line.includes('Priorité :')) {
       taskDetails.priority = line.split('Priorité :')[1].trim().toLowerCase();
+    } else if (line.includes('Statut :')) {
+      taskDetails.status = line.split('Statut :')[1].trim();
     }
   });
 
@@ -45,7 +47,7 @@ export const handleChatMessage = async (req, res) => {
     if (message.toLowerCase().includes('montre-moi')) {
       const tasksResponse = await TaskController.getTasksByUserId({ params: { userId } });
       if (tasksResponse && Array.isArray(tasksResponse)) {
-        const taskList = tasksResponse.map(task => `- ${task.title} (Priorité : ${task.priority}, Échéance : ${task.dueDate})`).join('\n');
+        const taskList = tasksResponse.map(task => `- ${task.title} (Priorité : ${task.priority}, Échéance : ${task.dueDate}, Statut : ${task.status})`).join('\n');
         return res.json({ reply: `Voici vos tâches :\n${taskList}` });
       } else {
         return res.json({ reply: 'Aucune tâche trouvée.' });

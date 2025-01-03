@@ -13,7 +13,7 @@ const navigation = [
 
 const userNavigation = [
   { name: "Votre profil", href: "/profile", onclick:"" },
-  { name: "Déconnexion", href: "/home", onclick:"{handleLogout}" },
+  { name: "Déconnexion", href: "/", onclick:"{handleLogout}" },
 ];
 
 function classNames(...classes) {
