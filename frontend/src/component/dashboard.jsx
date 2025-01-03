@@ -132,7 +132,7 @@ function Dashboard() {
 
   const handleSaveTask = async (taskId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/api/tasks/${taskId}`, editedTask);
+      const response = await axios.patch(`http://localhost:5000/api/tasks/${taskId}`, editedTask);
       const updatedTasks = tasks.map((task) =>
         task._id === taskId ? response.data : task
       );
