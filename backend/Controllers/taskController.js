@@ -20,16 +20,35 @@ export async function getTaskById(req, res) {
 
 export async function addTask(req, res) {
     try {
-      const task = await TaskService.addTask(req.body);
-      if (!task) {
-        throw new Error('La tâche n\'a pas pu être créée.');
-      }
-      res.status(201).json(task); // Retourne la tâche créée
+        const { title, description, dueDate, priority, status, userId } = req.body;
+
+        // Validation des champs requis
+        if (!title || !status || !userId) {
+            return res.status(400).json({ message: 'Les champs "title", "status" et "userId" sont obligatoires.' });
+        }
+
+        // Assurez-vous que les champs optionnels ont des valeurs par défaut si non fournis
+        const taskData = {
+            title,
+            description: description || 'No description provided',
+            dueDate: dueDate || new Date(),
+            priority: priority || 'Medium',
+            status: status,
+            userId,
+        };
+
+        const task = await TaskService.addTask(taskData);
+        if (!task) {
+            throw new Error('La tâche n\'a pas pu être créée.');
+        }
+
+        res.status(201).json(task); // Retourne la tâche créée
     } catch (error) {
-      console.error("Erreur dans addTask :", error);
-      res.status(500).json({ message: error.message || 'Erreur lors de l\'ajout de la tâche.' });
+        console.error("Erreur dans addTask :", error);
+        res.status(500).json({ message: error.message || 'Erreur lors de l\'ajout de la tâche.' });
     }
 }
+
 
 export async function updateTask(req, res) {
     try {

@@ -44,37 +44,40 @@ function Chatbot() {
     if (!input.trim()) return;
 
     try {
-      const token = localStorage.getItem("token");
-      console.log("Token JWT envoyé :", token); // Log pour déboguer
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+            "http://localhost:5000/api/chat",
+            { message: input, userId },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
 
-      const response = await axios.post(
-        "http://localhost:5000/api/chat",
-        { message: input, userId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        console.log("Réponse de l'API :", response.data);
 
-      console.log("Réponse de l'API :", response.data); // Log pour déboguer
-
-      setMessages([
-        ...messages,
-        { role: "user", content: input },
-        { role: "bot", content: response.data.reply },
-      ]);
-      setInput("");
+        // Ajout des messages au tableau de conversation
+        setMessages([
+            ...messages,
+            { role: "user", content: input },
+            { role: "bot", content: response.data.reply || "Action réalisée avec succès." },
+        ]);
+        setInput("");
     } catch (error) {
-      console.error("Erreur chatbot :", error);
-      setMessages([
-        ...messages,
-        { role: "user", content: input },
-        { role: "bot", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
-      ]);
-      setError("Erreur lors de la communication avec le chatbot.");
+        console.error("Erreur chatbot :", error);
+
+        // Message d'erreur par défaut
+        const errorMessage = error.response?.data?.reply || "Désolé, une erreur s'est produite. Veuillez réessayer.";
+
+        setMessages([
+            ...messages,
+            { role: "user", content: input },
+            { role: "bot", content: errorMessage },
+        ]);
+        setError("Erreur lors de la communication avec le chatbot.");
     }
-  };
+};
 
   return (
     <div className="min-h-full">

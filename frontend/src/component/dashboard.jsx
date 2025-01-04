@@ -4,7 +4,7 @@ import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon, PencilIcon, TrashIcon, CheckIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
-
+import { io } from "socket.io-client";
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
@@ -17,6 +17,9 @@ function Dashboard() {
   const [editingTaskId, setEditingTaskId] = useState(null); // ID de la tâche en cours d'édition
   const [editedTask, setEditedTask] = useState({}); // Données temporaires de la tâche en cours d'édition
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
@@ -43,6 +46,31 @@ function Dashboard() {
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
+
+  useEffect(() => {
+    // Se connecter au serveur WebSocket
+    const socket = io("http://localhost:5000"); // Assurez-vous que le port et l'URL sont corrects
+
+    // Écouter les notifications des rappels de tâches
+    socket.on("taskReminder", (data) => {
+      console.log("Notification reçue :", data);
+      setNotifications((prevNotifications) => [
+        ...prevNotifications,
+        data,
+      ]);
+      setUnreadCount((prevCount) => prevCount + 1);
+    });
+
+    // Nettoyer la connexion Socket.IO lors du démontage du composant
+    return () => {
+      socket.disconnect();  // Déconnecter le socket lorsque le composant est démonté
+    };
+  }, []);
+
+  const handleClearNotifications = () => {
+    setNotifications([]);
+    setUnreadCount(0);
+  };
 
   useEffect(() => {
     const storedUser = {
@@ -183,7 +211,15 @@ function Dashboard() {
                       >
                         <span className="sr-only">Voir les notifications</span>
                         <BellIcon className="h-6 w-6" aria-hidden="true" />
+                        {unreadCount > 0 && (
+                          <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-xs text-white">
+                            {unreadCount} new notifications
+                          </span>
+                        )}
                       </button>
+
+
+                      {/* Menu utilisateur */}
                       <Menu as="div" className="relative ml-3">
                         <div>
                           <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -215,7 +251,41 @@ function Dashboard() {
                         </Menu.Items>
                       </Menu>
                     </div>
+
                   </div>
+
+
+                  {/* Notification dropdown */}
+                  <div className="absolute top-16 right-0 z-10 w-64 bg-white shadow-lg py-1 rounded-md">
+                    {notifications.length > 0 ? (
+                      notifications.map((notification, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 text-sm text-gray-700 border-b"
+                        >
+                          <div className="font-medium">{notification.title}</div>
+                          <div className="text-xs text-gray-500">
+                            Échéance : {new Date(notification.dueDate).toLocaleString()}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                       <div className="px-4 py-2 text-sm text-gray-500">
+                      Aucune nouvelle notification.
+                      </div>
+                      )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={handleClearNotifications}
+                        className="w-full text-center text-sm text-gray-500 hover:bg-gray-100 px-4 py-2"
+                      >
+                        Effacer tout
+                      </button>
+                    )}
+                  </div>
+
+
+
                   <div className="-mr-2 flex md:hidden">
                     <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                       <span className="sr-only">Ouvrir le menu principal</span>

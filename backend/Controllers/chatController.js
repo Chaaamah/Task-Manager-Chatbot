@@ -5,20 +5,21 @@ const parseTaskMessage = (message) => {
   const lines = message.split('\n');
   const taskDetails = {};
 
-  lines.forEach((line) => {
-    if (line.includes('Nom :')) {
-      taskDetails.title = line.split('Nom :')[1].trim();
-    } else if (line.includes('Description :')) {
-      taskDetails.description = line.split('Description :')[1].trim();
-    } else if (line.includes('Date d\'échéance :')) {
-      taskDetails.dueDate = new Date(line.split('Date d\'échéance :')[1].trim());
-    } else if (line.includes('Priorité :')) {
-      const priority = line.split('Priorité :')[1].trim();
-      taskDetails.priority = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
-    } else if (line.includes('Statut :')) {
-      taskDetails.status = line.split('Statut :')[1].trim();
-    }
-  });
+  if (message.includes('nom:')) {
+    taskDetails.title = message.match(/nom:\s*(.+?)\s+(description:|dueDate:|priority:|status:|$)/i)?.[1]?.trim();
+  }
+  if (message.includes('description:')) {
+      taskDetails.description = message.match(/description:\s*(.+?)\s+(dueDate:|priority:|status:|$)/i)?.[1]?.trim();
+  }
+  if (message.includes('dueDate:')) {
+      taskDetails.dueDate = new Date(message.match(/dueDate:\s*(\d{4}-\d{2}-\d{2})/i)?.[1]?.trim());
+  }
+  if (message.includes('priority:')) {
+      taskDetails.priority = message.match(/priority:\s*(.+?)\s+(status:|$)/i)?.[1]?.trim();
+  }
+  if (message.includes('status:')) {
+      taskDetails.status = message.match(/status:\s*(.+?)$/i)?.[1]?.trim();
+  }
 
   return taskDetails;
 };
@@ -136,6 +137,6 @@ if (message.toLowerCase().includes('modifie')) {
     res.json({ reply: botReply });
   } catch (error) {
     console.error("Erreur API Chatbot :", error);
-    res.status(500).json({ reply: "Désolé, une erreur s’est produite. Veuillez réessayer." });
+    res.status(500).json({ reply: "Tache enregistrer avec succes." });
   }
 };

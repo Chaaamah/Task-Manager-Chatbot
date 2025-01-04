@@ -8,20 +8,23 @@ export async function getAllTasks() {
     }
 }
 
-export const addTask = async (taskData) => {
+export async function addTask(task) {
     try {
-      if (!taskData.title || !taskData.userId) {
-        throw new Error('Le titre et l\'ID utilisateur sont obligatoires.');
-      }
-  
-      const task = new TaskModel(taskData);
-      await task.save();
-      return task; // Retourne la tâche créée
+        // Ajoutez des valeurs par défaut pour éviter les erreurs
+        const taskData = {
+            title: task.title ,
+            description: task.description || 'No description ',
+            dueDate: task.dueDate || new Date(),
+            priority: task.priority || 'Medium',
+            status: task.status || 'Pending',
+            userId: task.userId,
+        };
+
+        return await TaskModel.create(taskData);
     } catch (error) {
-      console.error("Erreur dans addTask (service) :", error);
-      throw new Error(`Erreur lors de la création de la tâche : ${error.message}`);
+        throw new Error(`Erreur lors de l'ajout de la tâche: ${error.message}`);
     }
-  };
+}
 
 export async function getTaskById(taskId) {
     try {
