@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-
+import { io } from "socket.io-client";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
   { name: "AddTask", href: "/add_tasks", current: false },
@@ -24,6 +24,30 @@ function Chatbot() {
   const [input, setInput] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  useEffect(() => {
+    // Se connecter au serveur WebSocket
+    const socket = io("http://localhost:5000"); // Assurez-vous que le port et l'URL sont corrects
+
+    // Écouter les notifications des rappels de tâches
+    socket.on("taskReminder", (data) => {
+      console.log("Notification reçue :", data);
+      setNotifications((prevNotifications) => [
+        ...prevNotifications,
+        data,
+      ]);
+      setUnreadCount((prevCount) => prevCount + 1);
+    });
+
+    // Nettoyer la connexion Socket.IO lors du démontage du composant
+    return () => {
+      socket.disconnect();  // Déconnecter le socket lorsque le composant est démonté
+    };
+  }, []);
+
+ 
 
   const userId = localStorage.getItem("userId");
   const user = {
@@ -47,7 +71,7 @@ function Chatbot() {
         const token = localStorage.getItem("token");
         const response = await axios.post(
             "http://localhost:5000/api/chat",
-            { message: input, userId },
+            { message: input },
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -75,9 +99,10 @@ function Chatbot() {
             { role: "user", content: input },
             { role: "bot", content: errorMessage },
         ]);
-        setError("Erreur lors de la communication avec le chatbot.");
+        setError(errorMessage);
     }
-};
+  };
+
 
   return (
     <div className="min-h-full">
@@ -114,6 +139,11 @@ function Chatbot() {
                     >
                       <span className="sr-only">Voir les notifications</span>
                       <BellIcon className="h-6 w-6" aria-hidden="true" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-xs text-white">
+                          {unreadCount} 
+                        </span>
+                      )}
                     </button>
                     <Menu as="div" className="relative ml-3">
                       <div>

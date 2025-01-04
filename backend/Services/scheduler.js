@@ -3,7 +3,7 @@ import schedule from 'node-schedule';
 import TaskModel from '../Models/Task.js';
 
 const scheduleTaskReminders = () => {
-    schedule.scheduleJob('* * * * *', async () => { // Exécuter toutes les minutes
+    schedule.scheduleJob('0 * * * *', async () => { // Exécuter toutes les minutes
         try {
             const now = new Date();
             const tasks = await TaskModel.find({
