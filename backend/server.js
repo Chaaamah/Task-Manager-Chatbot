@@ -24,6 +24,10 @@ const io = new Server(httpServer, {
     },
 });
 
+import scheduleTaskReminders from './Services/scheduler.js';
+
+// Initialisez les rappels planifiés
+scheduleTaskReminders();
 // Gestion des événements Socket.IO
 io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté :", socket.id);
