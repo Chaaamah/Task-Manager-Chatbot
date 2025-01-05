@@ -1,5 +1,5 @@
 
-# Mini-Projet 2 : Chatbot de gestion des tâches
+# Chatbot de gestion des tâches
 
 ## Objectif du projet
 Ce projet a pour objectif de créer une application web dotée d’un **chatbot intelligent**, conçu pour accompagner les utilisateurs dans la gestion de leurs tâches quotidiennes. Le chatbot permettra d’interagir de manière dynamique pour ajouter, modifier ou supprimer des tâches, tout en proposant des recommandations pour organiser les priorités et envoyer des rappels automatiques pour les échéances imminentes. L’utilisation de **Tailwind CSS** assurera une interface utilisateur moderne, intuitive et élégante.
@@ -29,7 +29,7 @@ Ce projet a pour objectif de créer une application web dotée d’un **chatbot 
 ### Prérequis
 - Node.js et npm installés.
 - MongoDB opérationnel.
-- Docker (optionnel pour le déploiement).
+- Docker.
 
 ### Étapes d'installation
 1. **Cloner le repository** :
@@ -48,6 +48,7 @@ Ce projet a pour objectif de créer une application web dotée d’un **chatbot 
    PORT=5000
    MONGO_URI=<votre-uri-mongodb>
    JWT_SECRET=<votre-secret>
+   GOOGLE_API_KEY=<votre-google-api>
    ```
 
 3. **Configurer le frontend** :
