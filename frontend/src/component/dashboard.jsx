@@ -5,6 +5,7 @@ import { Bars3Icon, BellIcon, XMarkIcon, PencilIcon, TrashIcon, CheckIcon, XCirc
 import { Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import { io } from "socket.io-client";
+
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
@@ -13,13 +14,13 @@ function Dashboard() {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState(null); // ID de la tâche en cours d'édition
-  const [editedTask, setEditedTask] = useState({}); // Données temporaires de la tâche en cours d'édition
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedTask, setEditedTask] = useState({});
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", current: true },
@@ -48,10 +49,8 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    // Se connecter au serveur WebSocket
-    const socket = io("http://localhost:5000"); // Assurez-vous que le port et l'URL sont corrects
+    const socket = io("http://localhost:5000");
 
-    // Écouter les notifications des rappels de tâches
     socket.on("taskReminder", (data) => {
       console.log("Notification reçue :", data);
       setNotifications((prevNotifications) => [
@@ -61,9 +60,8 @@ function Dashboard() {
       setUnreadCount((prevCount) => prevCount + 1);
     });
 
-    // Nettoyer la connexion Socket.IO lors du démontage du composant
     return () => {
-      socket.disconnect();  // Déconnecter le socket lorsque le composant est démonté
+      socket.disconnect();
     };
   }, []);
 
@@ -125,8 +123,16 @@ function Dashboard() {
       filtered = filtered.filter(task => task.status === statusFilter);
     }
 
+    if (dateFilter) {
+      filtered = filtered.filter(task => {
+        const taskDueDate = new Date(task.dueDate).toISOString().split('T')[0];
+        const selectedDate = new Date(dateFilter).toISOString().split('T')[0];
+        return taskDueDate === selectedDate;
+      });
+    }
+
     setFilteredTasks(filtered);
-  }, [searchTerm, priorityFilter, statusFilter, tasks]);
+  }, [searchTerm, priorityFilter, statusFilter, dateFilter, tasks]);
 
   const taskStatusData = [
     { name: "Pending", value: tasks.filter(task => task.status === "Pending").length },
@@ -169,7 +175,7 @@ function Dashboard() {
       );
       setTasks(updatedTasks);
       setFilteredTasks(updatedTasks);
-      setEditingTaskId(null); // Quitter le mode édition
+      setEditingTaskId(null);
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la tâche :", error);
     }
@@ -218,8 +224,6 @@ function Dashboard() {
                         )}
                       </button>
 
-
-                      {/* Menu utilisateur */}
                       <Menu as="div" className="relative ml-3">
                         <div>
                           <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -251,11 +255,8 @@ function Dashboard() {
                         </Menu.Items>
                       </Menu>
                     </div>
-
                   </div>
 
-
-                  {/* Notification dropdown */}
                   <div className="absolute top-16 right-0 z-10 w-64 bg-white shadow-lg py-1 rounded-md">
                     {notifications.length > 0 ? (
                       notifications.map((notification, index) => (
@@ -283,8 +284,6 @@ function Dashboard() {
                       </button>
                     )}
                   </div>
-
-
 
                   <div className="-mr-2 flex md:hidden">
                     <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -424,6 +423,13 @@ function Dashboard() {
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
               </select>
+
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="p-2 border rounded"
+              />
             </div>
             {error ? (
               <div className="flex flex-col items-center justify-center text-center mt-10">
@@ -446,7 +452,6 @@ function Dashboard() {
                 {filteredTasks.map((task) => (
                   <div key={task._id} className="p-6 bg-white shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
                     {editingTaskId === task._id ? (
-                      // Mode édition
                       <div>
                         <input
                           type="text"
@@ -482,18 +487,17 @@ function Dashboard() {
                             onClick={() => handleSaveTask(task._id)}
                             className="text-green-500 hover:text-green-700"
                           >
-                            <CheckIcon className="h-5 w-5" /> {/* Icône pour enregistrer */}
+                            <CheckIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => setEditingTaskId(null)}
                             className="text-red-500 hover:text-red-700"
                           >
-                            <XCircleIcon className="h-5 w-5" /> {/* Icône pour annuler */}
+                            <XCircleIcon className="h-5 w-5" />
                           </button>
                         </div>
                       </div>
                     ) : (
-                      // Mode affichage
                       <div>
                         <h2 className="text-xl font-semibold text-gray-800 mb-2">{task.title}</h2>
                         <p className="text-gray-600 mb-4">{task.description}</p>

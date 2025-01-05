@@ -1,0 +1,22 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"  # Expose le port 5000 du backend
+    environment:
+      - NODE_ENV=production
+      - DB_URL=mongodb+srv://chama:chama2003@cluster0.bua8g.mongodb.net/task_db?retryWrites=true&w=majority&appName=Cluster0  # URL MongoDB Atlas
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"  # Expose le port 80 du frontend (Nginx)
+    depends_on:
+      - backend
