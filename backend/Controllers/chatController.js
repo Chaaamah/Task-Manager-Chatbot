@@ -20,7 +20,10 @@ const parseTaskMessage = (message) => {
   if (message.includes('status:')) {
       taskDetails.status = message.match(/status:\s*(.+?)$/i)?.[1]?.trim();
   }
-
+  
+ 
+  if (!taskDetails.priority) taskDetails.priority = 'Medium';
+  if (!taskDetails.status) taskDetails.status = 'Pending';
   return taskDetails;
 };
 

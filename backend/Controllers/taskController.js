@@ -33,7 +33,7 @@ export async function addTask(req, res) {
             description: description || 'No description provided',
             dueDate: dueDate || new Date(),
             priority: priority || 'Medium',
-            status: status,
+            status: status || 'Pending',
             userId,
         };
 
