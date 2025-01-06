@@ -24,7 +24,7 @@ const Profil = () => {
 
     // Récupérer les informations de l'utilisateur depuis l'API
     axios
-      .get(`http://localhost:5000/api/users/${userId}`)
+      .get(`https://task-manager-chatbot.onrender.com/api/users/${userId}`)
       .then((response) => {
         const user = response.data;
         setName(user.name);
@@ -49,7 +49,7 @@ const Profil = () => {
     try {
       // Mettre à jour les informations de l'utilisateur via une API
       const response = await axios.patch(
-        `http://localhost:5000/api/users/${userId}`,
+        `https://task-manager-chatbot.onrender.com/api/users/${userId}`,
         { name, email, password }
       );
 
@@ -89,7 +89,7 @@ const Profil = () => {
 
       try {
         // Supprimer le compte via une API
-        await axios.delete(`http://localhost:5000/api/users/${userId}`);
+        await axios.delete(`https://task-manager-chatbot.onrender.com/api/users/${userId}`);
 
         // Supprimer les données de l'utilisateur de localStorage
         localStorage.removeItem("userId");

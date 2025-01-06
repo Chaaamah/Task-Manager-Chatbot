@@ -29,7 +29,7 @@ function Chatbot() {
   
   useEffect(() => {
     // Se connecter au serveur WebSocket
-    const socket = io("http://localhost:5000"); // Assurez-vous que le port et l'URL sont corrects
+    const socket = io("https://task-manager-chatbot.onrender.com"); // Assurez-vous que le port et l'URL sont corrects
 
     // Écouter les notifications des rappels de tâches
     socket.on("taskReminder", (data) => {
@@ -70,7 +70,7 @@ function Chatbot() {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-            "http://localhost:5000/api/chat",
+            "https://task-manager-chatbot.onrender.com/api/chat",
             { message: input },
             {
                 headers: {

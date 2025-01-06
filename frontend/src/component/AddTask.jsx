@@ -72,7 +72,7 @@ function AddTask() {
       // Ajouter l'utilisateur connecté au corps de la requête
       const newTask = { ...task, userId };
 
-      await axios.post("http://localhost:5000/api/tasks", newTask);
+      await axios.post("https://task-manager-chatbot.onrender.com/api/tasks", newTask);
       navigate("/dashboard");
     } catch (err) {
       setError("Erreur lors de l'ajout de la tâche. Veuillez réessayer.");

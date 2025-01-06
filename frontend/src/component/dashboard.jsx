@@ -49,7 +49,7 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const socket = io("https://task-manager-chatbot.onrender.com");
 
     socket.on("taskReminder", (data) => {
       console.log("Notification reçue :", data);
@@ -85,7 +85,7 @@ function Dashboard() {
     setUser(storedUser);
 
     axios
-      .get(`http://localhost:5000/api/tasks/user/${storedUser.id}`)
+      .get(`https://task-manager-chatbot.onrender.com/api/tasks/user/${storedUser.id}`)
       .then((response) => {
         setTasks(response.data);
         setFilteredTasks(response.data);
@@ -96,7 +96,7 @@ function Dashboard() {
       });
 
     axios
-      .get("http://localhost:5000/api/users")
+      .get("https://task-manager-chatbot.onrender.com/api/users")
       .then((response) => {
         setUsers(response.data);
       })
@@ -156,7 +156,7 @@ function Dashboard() {
   const handleDeleteTask = (taskId) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
       axios
-        .delete(`http://localhost:5000/api/tasks/${taskId}`)
+        .delete(`https://task-manager-chatbot.onrender.com/api/tasks/${taskId}`)
         .then(() => {
           setTasks(tasks.filter(task => task._id !== taskId));
           setFilteredTasks(filteredTasks.filter(task => task._id !== taskId));
@@ -169,7 +169,7 @@ function Dashboard() {
 
   const handleSaveTask = async (taskId) => {
     try {
-      const response = await axios.patch(`http://localhost:5000/api/tasks/${taskId}`, editedTask);
+      const response = await axios.patch(`https://task-manager-chatbot.onrender.com/api/tasks/${taskId}`, editedTask);
       const updatedTasks = tasks.map((task) =>
         task._id === taskId ? response.data : task
       );
