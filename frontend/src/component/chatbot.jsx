@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { io } from "socket.io-client";
@@ -44,7 +44,7 @@ function Chatbot() {
     return () => {
       socket.disconnect();  // Déconnecter le socket lorsque le composant est démonté
     };
-  }, []);
+  }, [setNotifications]);
 
  
 

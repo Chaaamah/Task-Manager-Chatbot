@@ -103,7 +103,7 @@ function Dashboard() {
       .catch((error) => {
         console.error("Erreur lors du chargement des utilisateurs :", error);
       });
-  }, []);
+  }, [setUsers]);
 
   useEffect(() => {
     let filtered = tasks;
