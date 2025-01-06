@@ -22,9 +22,8 @@ function classNames(...classes) {
 function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
+  const [setError] = useState(null);
+  const [setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   
   useEffect(() => {

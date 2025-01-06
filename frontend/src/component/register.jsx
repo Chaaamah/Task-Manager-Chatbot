@@ -16,11 +16,11 @@ function Register() {
     setSuccess("");
 
     try {
-      const response = await axios.post("https://task-manager-chatbot.onrender.com/api/users/register", {
+      /*const response = await axios.post("https://task-manager-chatbot.onrender.com/api/users/register", {
         name,
         email,
         password,
-      });
+      });*/
 
       setSuccess("Compte créé avec succès. Redirection...");
       setTimeout(() => {

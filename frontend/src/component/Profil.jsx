@@ -48,10 +48,10 @@ const Profil = () => {
 
     try {
       // Mettre à jour les informations de l'utilisateur via une API
-      const response = await axios.patch(
+      /*const response = await axios.patch(
         `https://task-manager-chatbot.onrender.com/api/users/${userId}`,
         { name, email, password }
-      );
+      );*/
 
       // Afficher un message de succès
       setSuccess("Informations mises à jour avec succès !");

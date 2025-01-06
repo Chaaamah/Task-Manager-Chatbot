@@ -35,7 +35,7 @@ function AddTask() {
   // Récupération de l'utilisateur connecté
   const userId = localStorage.getItem("userId"); // Récupère l'ID utilisateur stocké après connexion
 // Récupération des informations de l'utilisateur connecté
-  const Storeuser = JSON.parse(localStorage.getItem("user"));
+  //const Storeuser = JSON.parse(localStorage.getItem("user"));
   const user = {
     id: localStorage.getItem("userId"),
     name: localStorage.getItem("userName"),

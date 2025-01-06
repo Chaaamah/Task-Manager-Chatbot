@@ -8,7 +8,7 @@ import { io } from "socket.io-client";
 
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -148,10 +148,10 @@ function Dashboard() {
 
   const COLORS = ["#FFBB28", "#00C49F", "#0088FE"];
 
-  const getUserNameById = (userId) => {
+  /*const getUserNameById = (userId) => {
     const user = users.find((user) => user._id === userId);
     return user ? user.name : "Utilisateur inconnu";
-  };
+  };*/
 
   const handleDeleteTask = (taskId) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
