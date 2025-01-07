@@ -1,9 +1,9 @@
-import { io } from '../server.js';  // Assurez-vous du chemin correct
+import { io } from '../server.js';  
 import schedule from 'node-schedule';
 import TaskModel from '../Models/Task.js';
 
 const scheduleTaskReminders = () => {
-    schedule.scheduleJob('0 * * * *', async () => { // Exécuter toutes les minutes
+    schedule.scheduleJob('* * * * *', async () => { // Exécuter toutes les minutes
         try {
             const now = new Date();
             const tasks = await TaskModel.find({
